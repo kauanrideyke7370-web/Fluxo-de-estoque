@@ -6,40 +6,39 @@
     <title>Fluxo de Estoque</title>
 </head>
 <body>
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button type="submit">Login</button>
-    </form>
+    <input type="text" id="p-product" placeholder="Product Name">
+    <input type="number" id="p-qty" placeholder="Quantity">
+    <input type="number" id="p-price" placeholder="Price">
+    <input type="text" id="p-supplier" placeholder="Supplier">
+    <input type="email" id="p-email" placeholder="Email">
 
     <table>
         <thead>
             <tr>
-                <th>Item</th>
+                <th>Product</th>
                 <th>Quantity</th>
+                <th>Price</th>
+                <th>Supplier</th>
+                <th>Email</th>
             </tr>
         </thead>
-        <tbody id="stockTableBody">
-            <!-- Stock items will be rendered here -->
+        <tbody>
+            <!-- Proper <tbody> content will be dynamically rendered by renderStock() -->
         </tbody>
     </table>
 
     <script>
-        function renderStock(stockItems) {
-            const tableBody = document.getElementById('stockTableBody');
-            tableBody.innerHTML = ''; // Clear existing rows
-            stockItems.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${item.name}</td><td>${item.quantity}</td>`;
-                tableBody.appendChild(row);
-            });
+        function renderStock() {
+            // Logic to dynamically render stock items goes here.
+            // It will replace the placeholder [...] with actual data.
         }
 
         function hideModal() {
-            const modal = document.getElementById('modal');
-            modal.style.display = 'none';
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
+            document.getElementById('p-product').value = '';
+            document.getElementById('p-qty').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-supplier').value = '';
+            document.getElementById('p-email').value = '';
         }
     </script>
 </body>
