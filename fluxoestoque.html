@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluxoEstoque | Controle de Inventário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { font-family: 'Inter', system-ui, sans-serif; }
+        .login-bg { background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%); }
+        .sidebar-link { transition: all 0.3s ease; }
+        .sidebar-link:hover { background-color: #1e3a5f; }
+        .active { background-color: #1e40af; color: white; border-left: 4px solid #60a5fa; }
+    </style>
+</head>
+<body class="bg-[#0a2540] text-white min-h-screen">
+
+    <!-- TELA DE LOGIN -->
+    <div id="auth-screen" class="min-h-screen login-bg flex items-center justify-center">
+        <div class="max-w-md w-full mx-6">
+            <div class="text-center mb-12">
+                <div class="mx-auto w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-boxes-stacked text-4xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight">FluxoEstoque</h1>
+                <p class="text-blue-400">Gestão Profissional de Estoque</p>
+            </div>
+
+            <div class="bg-[#112b4f] rounded-3xl p-10 shadow-2xl">
+                <div class="flex border-b border-blue-400/30 mb-8">
+                    <button onclick="showTab(0)" id="tab-login" class="flex-1 py-4 font-semibold border-b-2 border-blue-500 text-white">Login</button>
+                    <button onclick="showTab(1)" id="tab-register" class="flex-1 py-4 font-semibold text-blue-300">Cadastrar</button>
+                </div>
+
+                <!-- LOGIN -->
+                <div id="login-form">
+                    <form onsubmit="handleLogin(event)">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-sm text-blue-300 mb-2 block">E-mail</label>
+                                <input type="email" id="login-email" value="kauanrideyke7370@gmail.com" 
+                                       class="w-full bg-[#0a2540] border border-blue-400/40 focus:border-blue-500 rounded-2xl px-5 py-4 outline-none" required>
+                            </div>
+                            <div>
+                                <label class="text-sm text-blue-300 mb-2 block">Senha</label>
+                                <input type="password" id="login-password" value="Kauan73701173@" 
+                                       class="w-full bg-[#0a2540] border border-blue-400/40 focus:border-blue-500 rounded-2xl px-5 py-4 outline-none" required>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-semibold text-lg">ENTRAR NO SISTEMA</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- CADASTRO -->
+                <div id="register-form" class="hidden">
+                    <form onsubmit="handleRegister(event)">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-sm text-blue-300 mb-2 block">Nome Completo</label>
+                                <input type="text" id="reg-name" class="w-full bg-[#0a2540] border border-blue-400/40 focus:border-blue-500 rounded-2xl px-5 py-4 outline-none" required>
+                            </div>
+                            <div>
+                                <label class="text-sm text-blue-300 mb-2 block">E-mail</label>
+                                <input type="email" id="reg-email" class="w-full bg-[#0a2540] border border-blue-400/40 focus:border-blue-500 rounded-2xl px-5 py-4 outline-none" required>
+                            </div>
+                            <div>
+                                <label class="text-sm text-blue-300 mb-2 block">Senha</label>
+                                <input type="password" id="reg-password" class="w-full bg-[#0a2540] border border-blue-400/40 focus:border-blue-500 rounded-2xl px-5 py-4 outline-none" required>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-semibold text-lg">CRIAR CONTA</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SISTEMA PRINCIPAL -->
+    <div id="app-screen" class="hidden min-h-screen flex">
+        <!-- SIDEBAR -->
+        <div class="w-72 bg-[#112b4f] border-r border-blue-400/20 flex flex-col">
+            <div class="p-8 flex items-center gap-3 border-b border-blue-400/20">
+                <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl">📦</div>
+                <h1 class="text-2xl font-bold">FluxoEstoque</h1>
+            </div>
+
+            <nav class="flex-1 p-6 space-y-2" id="sidebar-menu"></nav>
+
+            <div class="p-6 border-t border-blue-400/20">
+                <div class="flex items-center gap-3 px-4 py-3 bg-[#0a2540] rounded-2xl">
+                    <div class="w-11 h-11 bg-blue-700 rounded-2xl flex items-center justify-center text-2xl">👤</div>
+                    <div class="flex-1">
+                        <p id="user-name" class="font-semibold"></p>
+                        <p id="user-email" class="text-xs text-blue-400"></p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="mt-6 w-full py-3 text-blue-400 hover:text-white hover:bg-[#1e3a5f] rounded-2xl flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO -->
+        <div class="flex-1 flex flex-col">
+            <div class="h-16 bg-[#0a2540] border-b border-blue-400/20 px-10 flex items-center justify-between">
+                <h2 id="page-title" class="text-2xl font-semibold">Dashboard</h2>
+                <div class="flex gap-4">
+                    <button onclick="newMovement('entrada')" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl flex items-center gap-2 text-sm font-medium">
+                        <i class="fa-solid fa-arrow-down"></i> Nova Entrada
+                    </button>
+                    <button onclick="newMovement('saida')" class="px-6 py-3 bg-rose-600 hover:bg-rose-700 rounded-2xl flex items-center gap-2 text-sm font-medium">
+                        <i class="fa-solid fa-arrow-up"></i> Nova Saída
+                    </button>
+                </div>
+            </div>
+            <div id="main-content" class="flex-1 p-10 overflow-auto"></div>
+        </div>
+    </div>
+
+    <!-- Modal Nova Compra -->
+    <div id="purchase-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-[#112b4f] rounded-3xl w-full max-w-lg mx-4 p-8">
+            <h3 class="text-2xl font-semibold mb-6">Novo Pedido de Compra</h3>
+            <div class="space-y-5">
+                <input id="p-product" type="text" placeholder="Nome do produto" class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="p-qty" type="number" placeholder="Quantidade" value="100" class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4">
+                    <input id="p-price" type="number" placeholder="Valor total R$" class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4">
+                </div>
+                <input id="p-supplier" type="text" placeholder="Fornecedor" class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4">
+                <input id="p-email" type="email" placeholder="E-mail do fornecedor" class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4">
+                
+                <div class="flex gap-3 mt-8">
+                    <button onclick="hideModal()" class="flex-1 py-4 border border-blue-400/30 rounded-2xl">Cancelar</button>
+                    <button onclick="savePurchase()" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl font-semibold">Salvar Pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('fluxo_users') || '{}');
+        let products = JSON.parse(localStorage.getItem('fluxo_products') || '[]');
+        let movements = JSON.parse(localStorage.getItem('fluxo_movements') || '[]');
+        let employees = JSON.parse(localStorage.getItem('fluxo_employees') || '[]');
+        let purchases = JSON.parse(localStorage.getItem('fluxo_purchases') || '[]');
+
+        const ADMIN_EMAIL = "kauanrideyke7370@gmail.com";
+        const ADMIN_PASSWORD = "Kauan73701173@";
+
+        function showTab(tab) {
+            document.getElementById('login-form').classList.toggle('hidden', tab === 1);
+            document.getElementById('register-form').classList.toggle('hidden', tab === 0);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const pass = document.getElementById('login-password').value;
+
+            if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
+                currentUser = { email, name: "Kauan Rideyke", role: "admin" };
+            } else if (users[email] && users[email].password === pass) {
+                currentUser = { email, name: users[email].name, role: "user" };
+            } else {
+                return alert("E-mail ou senha incorretos!");
+            }
+
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-email').textContent = currentUser.email;
+
+            buildSidebar();
+            navigateTo(1); // Abre na aba Produtos
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const pass = document.getElementById('reg-password').value;
+
+            if (users[email]) return alert("E-mail já cadastrado.");
+
+            users[email] = { name, password: pass };
+            localStorage.setItem('fluxo_users', JSON.stringify(users));
+            alert("Conta criada com sucesso! Faça login.");
+            showTab(0);
+        }
+
+        function buildSidebar() {
+            const menu = document.getElementById('sidebar-menu');
+            let html = `
+                <a onclick="navigateTo(0)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-0"><i class="fa-solid fa-gauge-high w-5"></i> Dashboard</a>
+                <a onclick="navigateTo(1)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-1"><i class="fa-solid fa-box w-5"></i> Produtos</a>
+                <a onclick="navigateTo(2)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-2"><i class="fa-solid fa-warehouse w-5"></i> Estoque Atual</a>
+                <a onclick="navigateTo(3)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-3"><i class="fa-solid fa-exchange-alt w-5"></i> Movimentações</a>
+                <a onclick="navigateTo(4)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-4"><i class="fa-solid fa-users w-5"></i> Funcionários</a>
+            `;
+
+            if (currentUser.role === "admin") {
+                html += `<a onclick="navigateTo(6)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-6"><i class="fa-solid fa-cart-shopping w-5"></i> Compras</a>`;
+            }
+
+            html += `<a onclick="navigateTo(5)" class="sidebar-link flex items-center gap-3 px-6 py-4 rounded-2xl" id="nav-5"><i class="fa-solid fa-cog w-5"></i> Configurações</a>`;
+            menu.innerHTML = html;
+        }
+
+        function navigateTo(page) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            const nav = document.getElementById(`nav-${page}`);
+            if (nav) nav.classList.add('active');
+
+            const titles = ["Dashboard", "Produtos", "Estoque Atual", "Movimentações", "Funcionários", "Configurações", "Compras"];
+            document.getElementById('page-title').textContent = titles[page];
+
+            const content = document.getElementById('main-content');
+
+            switch(page) {
+                case 0: renderDashboard(content); break;
+                case 1: renderProducts(content); break;
+                case 2: renderStock(content); break;
+                case 3: renderMovements(content); break;
+                case 4: renderEmployees(content); break;
+                case 5: renderSettings(content); break;
+                case 6: renderPurchases(content); break;
+            }
+        }
+
+        // ====================== DASHBOARD ======================
+        function renderDashboard(container) {
+            const lowStock = products.filter(p => getStock(p.id) < (p.minStock || 10)).length;
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-[#112b4f] rounded-3xl p-8">
+                        <p class="text-blue-300">Total de Produtos</p>
+                        <p class="text-5xl font-bold mt-4">${products.length}</p>
+                    </div>
+                    <div class="bg-[#112b4f] rounded-3xl p-8">
+                        <p class="text-blue-300">Movimentações</p>
+                        <p class="text-5xl font-bold mt-4">${movements.length}</p>
+                    </div>
+                    <div class="bg-[#112b4f] rounded-3xl p-8 ${lowStock > 0 ? 'border border-rose-500' : ''}">
+                        <p class="text-blue-300">Estoque Baixo</p>
+                        <p class="text-5xl font-bold mt-4 ${lowStock > 0 ? 'text-rose-400' : ''}">${lowStock}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ====================== PRODUTOS ======================
+        function renderProducts(container) {
+            let html = `
+                <div class="flex justify-between mb-8">
+                    <h3 class="text-2xl font-semibold">Produtos</h3>
+                    <button onclick="addProduct()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-2xl flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Novo Produto
+                    </button>
+                </div>
+                <div class="bg-[#112b4f] rounded-3xl overflow-hidden">
+                    <table class="w-full">
+                        <thead class="bg-[#0a2540]">
+                            <tr>
+                                <th class="px-8 py-5 text-left">Produto</th>
+                                <th class="px-8 py-5 text-left">Unidade</th>
+                                <th class="px-8 py-5 text-left">Estoque Mínimo</th>
+                                <th class="px-8 py-5 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-tbody"></tbody>
+                    </table>
+                </div>
+            `;
+            container.innerHTML = html;
+            updateProductsTable();
+        }
+
+        function updateProductsTable() {
+            const tbody = document.getElementById('products-tbody');
+            tbody.innerHTML = '';
+
+            products.forEach((p, i) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-t border-blue-400/20 hover:bg-[#1e3a5f]";
+                tr.innerHTML = `
+                    <td class="px-8 py-5 font-medium">${p.name}</td>
+                    <td class="px-8 py-5">${p.unit}</td>
+                    <td class="px-8 py-5">${p.minStock}</td>
+                    <td class="px-8 py-5 text-right">
+                        <button onclick="deleteProduct(${i})" class="text-rose-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-blue-400">Nenhum produto cadastrado.</td></tr>`;
+            }
+        }
+
+        function addProduct() {
+            const name = prompt("Nome do produto:");
+            if (!name) return;
+            const unit = prompt("Unidade (ex: un, kg, cx):", "un");
+            const minStock = parseInt(prompt("Estoque mínimo:", "10")) || 10;
+
+            products.push({ id: Date.now(), name, unit, minStock });
+            localStorage.setItem('fluxo_products', JSON.stringify(products));
+            updateProductsTable();
+        }
+
+        function deleteProduct(i) {
+            if (confirm("Excluir este produto?")) {
+                products.splice(i, 1);
+                localStorage.setItem('fluxo_products', JSON.stringify(products));
+                updateProductsTable();
+            }
+        }
+
+        // ====================== ESTOQUE ======================
+        function getStock(productId) {
+            let qty = 0;
+            movements.forEach(m => {
+                if (m.productId === productId) {
+                    qty += m.type === 'entrada' ? m.quantity : -m.quantity;
+                }
+            });
+            return qty;
+        }
+
+        function renderStock(container) {
+            let html = `<h3 class="text-2xl font-semibold mb-8">Estoque Atual</h3>`;
+            html += `<div class="bg-[#112b4f] rounded-3xl overflow-hidden"><table class="w-full">`;
+            html += `<thead class="bg-[#0a2540]"><tr><th class="px-8 py-5 text-left">Produto</th><th class="px-8 py-5 text-left">Quantidade</th><th class="px-8 py-5 text-left">Status</th></tr></thead><tbody>`;
+
+            products.forEach(p => {
+                const qty = getStock(p.id);
+                const status = qty < (p.minStock || 10) ? 
+                    `<span class="bg-rose-500 px-4 py-1 rounded-3xl text-xs">BAIXO</span>` : 
+                    `<span class="bg-emerald-500 px-4 py-1 rounded-3xl text-xs">OK</span>`;
+
+                html += `
+                <tr class="border-t border-blue-400/20">
+                    <td class="px-8 py-5">${p.name}</td>
+                    <td class="px-8 py-5 font-semibold">${qty} ${p.unit}</td>
+                    <td class="px-8 py-5">${status}</td>
+                </tr>`;
+            });
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        // ====================== MOVIMENTAÇÕES ======================
+        function renderMovements(container) {
+            let html = `<h3 class="text-2xl font-semibold mb-8">Histórico de Movimentações</h3>`;
+            if (movements.length === 0) {
+                html += `<p class="text-center py-12 text-blue-400">Nenhuma movimentação registrada.</p>`;
+            } else {
+                html += `<div class="bg-[#112b4f] rounded-3xl overflow-hidden"><table class="w-full"><thead class="bg-[#0a2540]"><tr>
+                    <th class="px-8 py-5 text-left">Data</th>
+                    <th class="px-8 py-5 text-left">Tipo</th>
+                    <th class="px-8 py-5 text-left">Produto</th>
+                    <th class="px-8 py-5 text-left">Quantidade</th>
+                </tr></thead><tbody>`;
+
+                movements.slice().reverse().forEach(m => {
+                    const prod = products.find(p => p.id === m.productId) || { name: "Produto removido" };
+                    const typeClass = m.type === 'entrada' ? 'bg-emerald-500' : 'bg-rose-500';
+                    html += `
+                    <tr class="border-t border-blue-400/20">
+                        <td class="px-8 py-5">${new Date(m.date).toLocaleString('pt-BR')}</td>
+                        <td class="px-8 py-5"><span class="${typeClass} text-white px-4 py-1 rounded-3xl text-xs">${m.type.toUpperCase()}</span></td>
+                        <td class="px-8 py-5">${prod.name}</td>
+                        <td class="px-8 py-5">${m.quantity}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // ====================== FUNCIONÁRIOS ======================
+        function renderEmployees(container) {
+            let html = `
+                <div class="flex justify-between mb-8">
+                    <h3 class="text-2xl font-semibold">Funcionários</h3>
+                    <button onclick="addEmployee()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-2xl flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Adicionar
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="employees-grid"></div>
+            `;
+            container.innerHTML = html;
+            updateEmployeesGrid();
+        }
+
+        function updateEmployeesGrid() {
+            const grid = document.getElementById('employees-grid');
+            grid.innerHTML = '';
+
+            employees.forEach((emp, i) => {
+                const div = document.createElement('div');
+                div.className = "bg-[#112b4f] rounded-3xl p-6";
+                div.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl">👤</div>
+                        <div>
+                            <p class="font-semibold">${emp.name}</p>
+                            <p class="text-blue-400">${emp.email}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteEmployee(${i})" class="mt-6 text-rose-400 hover:text-rose-500 text-sm">Remover</button>
+                `;
+                grid.appendChild(div);
+            });
+
+            if (employees.length === 0) {
+                grid.innerHTML = `<p class="col-span-2 text-center py-12 text-blue-400">Nenhum funcionário cadastrado.</p>`;
+            }
+        }
+
+        function addEmployee() {
+            const name = prompt("Nome completo do funcionário:");
+            const email = prompt("E-mail do funcionário:");
+            if (name && email) {
+                employees.push({ id: Date.now(), name, email });
+                localStorage.setItem('fluxo_employees', JSON.stringify(employees));
+                updateEmployeesGrid();
+            }
+        }
+
+        function deleteEmployee(i) {
+            if (confirm("Remover este funcionário?")) {
+                employees.splice(i, 1);
+                localStorage.setItem('fluxo_employees', JSON.stringify(employees));
+                updateEmployeesGrid();
+            }
+        }
+
+        // ====================== AS DUAS ÚLTIMAS OPÇÕES ======================
+
+        // 1. CONFIGURAÇÕES (completa)
+        function renderSettings(container) {
+            container.innerHTML = `
+                <div class="max-w-lg mx-auto bg-[#112b4f] rounded-3xl p-10">
+                    <h3 class="text-2xl font-semibold mb-8 flex items-center gap-3">
+                        <i class="fa-solid fa-cog"></i> Configurações da Conta
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-2">Nome de Exibição</label>
+                            <input id="config-name" value="${currentUser.name}" 
+                                   class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-2">Número de WhatsApp</label>
+                            <input id="config-whatsapp" type="tel" placeholder="5511999999999" 
+                                   class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-blue-300 mb-2">Nova Senha</label>
+                            <input id="config-password" type="password" placeholder="Digite a nova senha" 
+                                   class="w-full bg-[#0a2540] border border-blue-400/40 rounded-2xl px-5 py-4 outline-none">
+                        </div>
+                        <button onclick="saveSettings()" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-semibold text-lg mt-4">
+                            SALVAR ALTERAÇÕES
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveSettings() {
+            const newName = document.getElementById('config-name').value.trim();
+            const newWhatsapp = document.getElementById('config-whatsapp').value.trim();
+            const newPass = document.getElementById('config-password').value.trim();
+
+            if (newName) currentUser.name = newName;
+            if (newWhatsapp) currentUser.whatsapp = newWhatsapp;
+
+            if (newPass) {
+                if (!users[currentUser.email]) users[currentUser.email] = {};
+                users[currentUser.email].password = newPass;
+                localStorage.setItem('fluxo_users', JSON.stringify(users));
+            }
+
+            document.getElementById('user-name').textContent = currentUser.name;
+            alert("✅ Configurações salvas com sucesso!");
+        }
+
+        // 2. COMPRAS (só para admin)
+        function renderPurchases(container) {
+            let html = `
+                <div class="flex justify-between mb-8">
+                    <h3 class="text-2xl font-semibold">Pedidos de Compra</h3>
+                    <button onclick="showPurchaseModal()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-2xl flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Novo Pedido
+                    </button>
+                </div>
+                <div id="purchases-container" class="bg-[#112b4f] rounded-3xl overflow-hidden"></div>
+            `;
+            container.innerHTML = html;
+            updatePurchases();
+        }
+
+        function showPurchaseModal() {
+            document.getElementById('purchase-modal').classList.remove('hidden');
+            document.getElementById('purchase-modal').classList.add('flex');
+        }
+
+        function hideModal() {
+            document.getElementById('purchase-modal').classList.add('hidden');
+            document.getElementById('purchase-modal').classList.remove('flex');
+        }
+
+        function savePurchase() {
+            const product = document.getElementById('p-product').value.trim();
+            const qty = document.getElementById('p-qty').value || 0;
+            const price = document.getElementById('p-price').value || 0;
+            const supplier = document.getElementById('p-supplier').value.trim();
+            const email = document.getElementById('p-email').value.trim();
+
+            if (!product || !supplier) return alert("Produto e fornecedor são obrigatórios.");
+
+            purchases.push({
+                id: Date.now(),
+                product,
+                quantity: parseFloat(qty),
+                price: parseFloat(price),
+                supplier,
+                supplierEmail: email,
+                status: "pendente",
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+
+            localStorage.setItem('fluxo_purchases', JSON.stringify(purchases));
+            hideModal();
+            updatePurchases();
+        }
+
+        function updatePurchases() {
+            const container = document.getElementById('purchases-container');
+            if (purchases.length === 0) {
+                container.innerHTML = `<p class="text-center py-12 text-blue-400">Nenhum pedido de compra cadastrado.</p>`;
+                return;
+            }
+
+            let html = `<table class="w-full"><thead class="bg-[#0a2540]"><tr>
+                <th class="px-8 py-5 text-left">Produto</th>
+                <th class="px-8 py-5 text-left">Qtd</th>
+                <th class="px-8 py-5 text-left">Valor</th>
+                <th class="px-8 py-5 text-left">Fornecedor</th>
+                <th class="px-8 py-5 text-left">Status</th>
+                <th class="px-8 py-5 text-right">Ação</th>
+            </tr></thead><tbody>`;
+
+            purchases.forEach((p, i) => {
+                const statusClass = p.status === 'entregue' ? 'bg-emerald-500' : 'bg-amber-500';
+                html += `
+                <tr class="border-t border-blue-400/20">
+                    <td class="px-8 py-5">${p.product}</td>
+                    <td class="px-8 py-5">${p.quantity}</td>
+                    <td class="px-8 py-5">R$ ${p.price.toFixed(2)}</td>
+                    <td class="px-8 py-5">${p.supplier}</td>
+                    <td class="px-8 py-5"><span class="${statusClass} px-4 py-1 rounded-3xl text-xs">${p.status.toUpperCase()}</span></td>
+                    <td class="px-8 py-5 text-right">
+                        <button onclick="togglePurchase(${i})" class="text-sm ${p.status === 'pendente' ? 'text-emerald-400' : 'text-amber-400'}">
+                            ${p.status === 'pendente' ? '✅ Marcar como Entregue' : '⏳ Marcar como Pendente'}
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function togglePurchase(i) {
+            purchases[i].status = purchases[i].status === 'pendente' ? 'entregue' : 'pendente';
+            localStorage.setItem('fluxo_purchases', JSON.stringify(purchases));
+            updatePurchases();
+        }
+
+        function newMovement(type) {
+            alert(`Nova ${type.toUpperCase()} registrada.\n\nFuncionalidade em expansão.`);
+        }
+
+        function logout() {
+            if (confirm("Deseja sair do sistema?")) location.reload();
+        }
+
+        // Inicialização
+        window.onload = () => showTab(0);
+    </script>
+</body>
+</html>
